@@ -1,0 +1,16 @@
+
+s3tools
+-------
+
+simple command-line clients for Amazon S3.
+
+s3ftp behaves like sftp, s3rsync behaves like rsync.
+
+to get started, add a keys.py file with your access and secret keys
+from http://aws.amazon.com/s3 (or stick them into your MacOS X
+keychain).
+
+-d.
+
+---
+http://monkey.org/~dugsong/s3tools/
