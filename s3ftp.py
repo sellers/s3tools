@@ -109,8 +109,6 @@ class S3ftp(object):
         r = self.conn.list_bucket(self.bucket, options=options)
         if not self.ok(r):
             self.perror(r)
-        elif not r.entries:
-            print 'Invalid directory:', path
         else:
             self.cwd = path
     
@@ -122,22 +120,27 @@ class S3ftp(object):
             print 'Couldn\'t change local directory to "%s": %s' % \
                   (path, msg[1])
     
-    def cmd_get(self, path):
+    def cmd_get(self, path, _pager=''):
         """download a file"""
         path = self._path_to_key(self.normpath(path))
         r = self.conn.get(self.bucket, path)
         if self.ok(r):
             buf = r.object.data
             if r.http_response.getheader('content-encoding', '') == 'gzip':
-                print 'decompressing'
                 buf = gzip.GzipFile(fileobj=cStringIO.StringIO(buf)).read()
-            fname = os.path.basename(path)
-            f = open(fname, 'wb')
+            if _pager:
+                f = os.popen(_pager, 'w')
+            else:
+                f = open(os.path.basename(path), 'wb')
             f.write(buf)
             f.close()
         else:
             self.perror(r)
 
+    def cmd_more(self, path):
+        """page through a file"""
+        return self.cmd_get(path, os.environ.get('PAGER', 'more'))
+    
     def cmd_lpwd(self):
         """print local working directory"""
         print 'Local working directory:', os.getcwd()
@@ -199,12 +202,12 @@ class S3ftp(object):
         if not rpath:
             rpath = self.normpath('%s/%s' % (
                 self.cwd, os.path.basename(lpath)))
-        if buf:
-            key = self._path_to_key(self.normpath(rpath))
-            print 'Uploading', lpath, 'to', key
-            r = self.conn.put(self.bucket, key, buf)
-            if not self.ok(r):
-                self.perror(r)
+
+        key = self._path_to_key(self.normpath(rpath))
+        print 'Uploading', lpath, 'to', key
+        r = self.conn.put(self.bucket, key, buf)
+        if not self.ok(r):
+            self.perror(r)
     
     def cmd_pwd(self):
         """print working directory on remote machine"""
