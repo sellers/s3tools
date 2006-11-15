@@ -65,6 +65,8 @@ def canonical_string(method, path, headers, expires=None):
         buf += "?acl"
     elif re.search("[&?]torrent($|=|&)", path):
         buf += "?torrent"
+    elif re.search("[&?]logging($|=|&)", path):
+        buf += "?logging"
 
     return buf
 
@@ -134,6 +136,12 @@ class AWSAuthConnection:
         return Response(
                 self.make_request('DELETE', '%s/%s' % (bucket, urllib.quote_plus(key)), headers))
 
+    def get_bucket_logging(self, bucket, headers={}):
+        return GetResponse(self.make_request('GET', '%s?logging' % (bucket), headers))
+
+    def put_bucket_logging(self, bucket, logging_xml_doc, headers={}):
+        return Response(self.make_request('PUT', '%s?logging' % (bucket), headers, logging_xml_doc))
+
     def get_bucket_acl(self, bucket, headers={}):
         return self.get_acl(bucket, '', headers)
 
@@ -155,8 +163,7 @@ class AWSAuthConnection:
     def list_all_my_buckets(self, headers={}):
         return ListAllMyBucketsResponse(self.make_request('GET', '', headers))
 
-    def make_request(self, method, path, headers=None, data='', metadata={}):
-        if not headers: headers = {}
+    def make_request(self, method, path, headers={}, data='', metadata={}):
         final_headers = merge_meta(headers, metadata);
         # add auth header
         self.add_aws_auth_header(final_headers, method, path)
@@ -230,6 +237,12 @@ class QueryStringAuthGenerator:
 
     def delete(self, bucket, key, headers={}):
         return self.generate_url('DELETE', '%s/%s' % (bucket, urllib.quote_plus(key)), headers)
+
+    def get_bucket_logging(self, bucket, headers={}):
+        return self.generate_url('GET', '%s?logging' % (bucket), headers)
+
+    def put_bucket_logging(self, bucket, logging_xml_doc, headers={}):
+        return self.generate_url('PUT', '%s?logging' % (bucket), headers)
 
     def get_bucket_acl(self, bucket, headers={}):
         return self.get_acl(bucket, '', headers)
