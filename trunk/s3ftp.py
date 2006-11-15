@@ -202,10 +202,13 @@ class S3ftp(object):
         if not rpath:
             rpath = self.normpath('%s/%s' % (
                 self.cwd, os.path.basename(lpath)))
-
+        if not buf:
+            headers = { 'Content-Type':'text/plain', 'Content-Length':0 }
+        else:
+            headers = {}
         key = self._path_to_key(self.normpath(rpath))
         print 'Uploading', lpath, 'to', key
-        r = self.conn.put(self.bucket, key, buf)
+        r = self.conn.put(self.bucket, key, buf, headers)
         if not self.ok(r):
             self.perror(r)
     
