@@ -13,6 +13,8 @@ __license__ = 'GPL'
 __url__ = 'http://monkey.org/~dugsong/s3tools/'
 __version__ = '0.1'
 
+# $Id$
+
 import cStringIO, fnmatch, gzip, inspect, os, readline, shlex, sys
 import xml.dom.minidom
 
